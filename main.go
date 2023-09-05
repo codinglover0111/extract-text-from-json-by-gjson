@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -64,6 +66,23 @@ func main() {
 	flag.Parse()
 	var path string = flag.Arg(0)
 	var rex string = flag.Arg(1)
+	var set_cpu string = flag.Arg(2)
+	if set_cpu == "" {
+		runtime.GOMAXPROCS(1)
+	} else {
+		want_cpu_num, err := strconv.Atoi(set_cpu)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if want_cpu_num > runtime.NumCPU() {
+			fmt.Println("set cpu as you can")
+			runtime.GOMAXPROCS(runtime.NumCPU())
+		} else {
+			fmt.Println("set cpu as " + set_cpu)
+			runtime.GOMAXPROCS(want_cpu_num)
+		}
+	}
+
 	if path == "" || rex == "" {
 		fmt.Println("path or rex is empty")
 		return
