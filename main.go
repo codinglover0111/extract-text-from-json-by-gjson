@@ -3,10 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/tidwall/gjson"
 )
@@ -34,26 +32,25 @@ func string_array_to_file(string_array []string, path string) {
 	for _, value := range string_array {
 		return_value += value + "\n"
 	}
+	if return_value == "" {
+		panic("return_value is empty \n check your rex")
+	}
+	if fileExists(path) {
+		fmt.Print("file exists, do you want to overwrite it? (y/n): ")
+		var input string
+		fmt.Scanln(&input)
+		if input == "y" {
+			fmt.Println("overwriting file")
+		} else {
+			fmt.Println("not overwriting file")
+			return
+		}
+	}
 	err := os.WriteFile(path, []byte(return_value), 0666)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
-
-// func string_Array_to_file(byte_array []byte, path string) {
-// 	file_path := strings.ReplaceAll(path, "\\", "/")
-// 	file_path = strings.ReplaceAll(file_path, "\"", "")
-// 	var return_value []byte
-// 	for _, value := range byte_array {
-// 		valueBytes := []byte{value}
-// 		valueBytes = append(valueBytes, []byte("\n")...)
-// 		return_value = append(return_value, valueBytes...)
-// 	}
-// 	err := os.WriteFile(file_path, return_value, 0666)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// }
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -61,17 +58,6 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
-}
-
-func randomString() string {
-	rand.Seed(time.Now().UnixNano())
-
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 4)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(b)
 }
 
 func main() {
