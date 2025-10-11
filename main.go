@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -62,6 +63,22 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func buildOutputPath(path string, rex string) string {
+	cleanedPath := strings.Trim(path, "\"")
+	normalizedPath := filepath.Clean(strings.ReplaceAll(cleanedPath, "\\", string(os.PathSeparator)))
+	baseName := filepath.Base(normalizedPath)
+	saveFileName := strings.TrimSuffix(baseName, filepath.Ext(baseName))
+
+	extractPart := rex
+	rexParts := strings.Split(rex, ".")
+	if len(rexParts) > 0 {
+		extractPart = rexParts[len(rexParts)-1]
+	}
+
+	fileName := fmt.Sprintf("%s_%s.txt", saveFileName, extractPart)
+	return filepath.Join(".", fileName)
+}
+
 func main() {
 	flag.Parse()
 	var path string = flag.Arg(0)
@@ -89,11 +106,7 @@ func main() {
 	}
 	var return_value_string []string = path_to_value(path, rex)
 
-	var save_file_name string = strings.Split(path, "\\")[len(strings.Split(path, "\\"))-1]
-	save_file_name = strings.ReplaceAll(save_file_name, ".json", "")
-
-	var extract_part string = strings.Split(rex, ".")[len(strings.Split(rex, "."))-1]
-	var save_path string = "./" + save_file_name + "_" + extract_part + ".txt"
+	var save_path string = buildOutputPath(path, rex)
 
 	string_array_to_file(return_value_string, save_path)
 }
